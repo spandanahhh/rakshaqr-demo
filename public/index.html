@@ -1364,16 +1364,9 @@ footer {
         <!-- =================================================
              THE ONLY FAMILY ACTION THE BYSTANDER SEES
         ================================================= -->
-
-        <button
-            class="family-button"
-            id="familyButton"
-            onclick="contactFamily()"
-        >
-
-            🚨 CONTACT FAMILY
-
-        </button>
+<button id="contactFamilyBtn" onclick="contactFamily()">
+    📞 Contact Family
+</button>
 
 
         <div
@@ -1833,6 +1826,171 @@ function closeModal() {
 
 </script>
 
+<script>
+async function contactFamily() {
 
+    const button = document.getElementById("contactFamilyBtn");
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = "⏳ Preparing Alert...";
+    }
+
+    let latitude = null;
+    let longitude = null;
+
+    // Get GPS
+    if (navigator.geolocation) {
+
+        try {
+
+            const position = await new Promise((resolve, reject) => {
+
+                navigator.geolocation.getCurrentPosition(
+                    resolve,
+                    reject,
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 8000,
+                        maximumAge: 0
+                    }
+                );
+
+            });
+
+            latitude = position.coords.latitude;
+            longitude = position.coords.longitude;
+
+        } catch (error) {
+
+            console.log("GPS permission denied/unavailable.");
+
+        }
+
+    }
+
+
+    const emergencyId = "RQ-7X92-A4";
+
+    const locationText =
+        latitude !== null && longitude !== null
+            ? `https://maps.google.com/?q=${latitude},${longitude}`
+            : "Location unavailable";
+
+
+    const message =
+`🚨 RAKSHAQR EMERGENCY ALERT
+
+An emergency QR scan has been triggered.
+
+Emergency ID:
+${emergencyId}
+
+Please respond immediately.
+
+Live Location:
+${locationText}
+
+— RakshaQR Emergency System`;
+
+
+    // Save message for the SMS button
+    window.rakshaEmergencySMS = message;
+
+
+    // Show success area
+    let status = document.getElementById("familyStatus");
+
+    if (!status) {
+
+        status = document.createElement("div");
+
+        status.id = "familyStatus";
+
+        button.parentElement.appendChild(status);
+
+    }
+
+
+    status.innerHTML = `
+
+        <div style="
+            margin-top:20px;
+            padding:18px;
+            border-radius:16px;
+            background:#ecfdf5;
+            border:1px solid #86efac;
+            color:#166534;
+        ">
+
+            <strong>
+                🟢 Emergency Alert Ready
+            </strong>
+
+            <br><br>
+
+            Family Notification:
+            <strong>Ready ✓</strong>
+
+            <br>
+
+            GPS:
+            <strong>
+                ${
+                    latitude !== null
+                        ? "Captured ✓"
+                        : "Unavailable"
+                }
+            </strong>
+
+            <br><br>
+
+            <button
+                onclick="openEmergencySMS()"
+                style="
+                    padding:12px 18px;
+                    border:0;
+                    border-radius:10px;
+                    background:#0f766e;
+                    color:white;
+                    font-weight:600;
+                    cursor:pointer;
+                "
+            >
+                📱 Open Emergency SMS
+            </button>
+
+        </div>
+    `;
+
+
+    if (button) {
+
+        button.innerHTML =
+            "🟢 Emergency Alert Ready";
+
+    }
+
+}
+
+
+function openEmergencySMS() {
+
+    const message =
+        window.rakshaEmergencySMS || "";
+
+
+    const familyNumber =
+        "+919666249048";
+
+
+    const smsURL =
+        `sms:${familyNumber}?body=${encodeURIComponent(message)}`;
+
+
+    window.location.href = smsURL;
+
+}
+</script>
 </body>
 </html>
